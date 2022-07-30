@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from os.path import exists
+import os, sys
+import logging
+
 import alpaca_trade_api as tradeapi
 import exchange_calendars as tc
 import numpy as np
@@ -7,6 +11,13 @@ import pandas as pd
 import pytz
 from stockstats import StockDataFrame as Sdf
 
+logging.basicConfig(
+    format='%(asctime)s [%(levelname)s] %(name)s - %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S',
+    stream=sys.stdout,
+)
+logger = logging.getLogger('notebook')
 
 class AlpacaProcessor:
     def __init__(self, API_KEY=None, API_SECRET=None, API_BASE_URL=None, api=None):
@@ -19,12 +30,16 @@ class AlpacaProcessor:
             self.api = api
 
     def download_data(
-        self, ticker_list, start_date, end_date, time_interval
+        self, ticker_list, start_date, end_date, time_interval, dataset_path=None
     ) -> pd.DataFrame:
 
         self.start = start_date
         self.end = end_date
         self.time_interval = time_interval
+
+        # Create dirctory for the tick dataset
+        dataset_root = 'dataset/stock'
+        directory = f'{self.time_interval}'
 
         NY = "America/New_York"
         start_date = pd.Timestamp(start_date, tz=NY)
@@ -32,6 +47,16 @@ class AlpacaProcessor:
         date = start_date
         data_df = pd.DataFrame()
         while date != end_date:
+
+            ticker_directory = os.path.join(
+                                    dataset_root, 
+                                    directory, 
+                                    date.strftime("%Y"),
+                                    date.strftime("%m"),
+                                    date.strftime("%d")
+                                )
+            os.makedirs(ticker_directory, exist_ok=True)
+
             start_time = (date + pd.Timedelta("09:30:00")).isoformat()
             end_time = (date + pd.Timedelta("15:59:00")).isoformat()
             for tic in ticker_list:
