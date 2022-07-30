@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  finrl:
+    build:
+      context: ../
+      dockerfile: ./fin-docker/Dockerfile
+    ports:
+      - 8888:8888
+    volumes:
+      - ../:/src/
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
