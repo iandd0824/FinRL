@@ -149,3 +149,4 @@ alpaca_processor_test.py
 
 # epocha dataset
 /epocha/dataset
+/epocha/.env

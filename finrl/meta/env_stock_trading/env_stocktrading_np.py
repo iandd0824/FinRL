@@ -22,17 +22,17 @@ class StockTradingEnv(gym.Env):
     ):
         price_ary = config["price_array"]
         tech_ary = config["tech_array"]
-        turbulence_ary = config["turbulence_array"]
+        # turbulence_ary = config["turbulence_array"]
         if_train = config["if_train"]
         self.price_ary = price_ary.astype(np.float32)
         self.tech_ary = tech_ary.astype(np.float32)
-        self.turbulence_ary = turbulence_ary
+        # self.turbulence_ary = turbulence_ary
 
         self.tech_ary = self.tech_ary * 2**-7
-        self.turbulence_bool = (turbulence_ary > turbulence_thresh).astype(np.float32)
-        self.turbulence_ary = (
-            self.sigmoid_sign(turbulence_ary, turbulence_thresh) * 2**-5
-        ).astype(np.float32)
+        # self.turbulence_bool = (turbulence_ary > turbulence_thresh).astype(np.float32)
+        # self.turbulence_ary = (
+        #     self.sigmoid_sign(turbulence_ary, turbulence_thresh) * 2**-5
+        # ).astype(np.float32)
 
         stock_dim = self.price_ary.shape[1]
         self.gamma = gamma
@@ -60,7 +60,8 @@ class StockTradingEnv(gym.Env):
         self.env_name = "StockEnv"
         # self.state_dim = 1 + 2 + 2 * stock_dim + self.tech_ary.shape[1]
         # # amount + (turbulence, turbulence_bool) + (price, stock) * stock_dim + tech_dim
-        self.state_dim = 1 + 2 + 3 * stock_dim + self.tech_ary.shape[1]
+        # self.state_dim = 1 + 2 + 3 * stock_dim + self.tech_ary.shape[1]
+        self.state_dim = 1 + 3 * stock_dim + self.tech_ary.shape[1]
         # amount + (turbulence, turbulence_bool) + (price, stock) * stock_dim + tech_dim
         self.stocks_cd = None
         self.action_dim = stock_dim
@@ -107,7 +108,8 @@ class StockTradingEnv(gym.Env):
         price = self.price_ary[self.day]
         self.stocks_cool_down += 1
 
-        if self.turbulence_bool[self.day] == 0:
+        # if self.turbulence_bool[self.day] == 0:
+        if True :
             min_action = int(self.max_stock * self.min_stock_rate)  # stock_cd
             for index in np.where(actions < -min_action)[0]:  # sell_index:
                 if price[index] > 0:  # Sell only if current asset is > 0
@@ -128,10 +130,10 @@ class StockTradingEnv(gym.Env):
                     )
                     self.stocks_cool_down[index] = 0
 
-        else:  # sell all when turbulence
-            self.amount += (self.stocks * price).sum() * (1 - self.sell_cost_pct)
-            self.stocks[:] = 0
-            self.stocks_cool_down[:] = 0
+        # else:  # sell all when turbulence
+        #     self.amount += (self.stocks * price).sum() * (1 - self.sell_cost_pct)
+        #     self.stocks[:] = 0
+        #     self.stocks_cool_down[:] = 0
 
         state = self.get_state(price)
         total_asset = self.amount + (self.stocks * price).sum()
@@ -152,8 +154,8 @@ class StockTradingEnv(gym.Env):
         return np.hstack(
             (
                 amount,
-                self.turbulence_ary[self.day],
-                self.turbulence_bool[self.day],
+                # self.turbulence_ary[self.day],
+                # self.turbulence_bool[self.day],
                 price * scale,
                 self.stocks * scale,
                 self.stocks_cool_down,
